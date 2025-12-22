@@ -18,6 +18,7 @@ package com.jagrosh.discordipc.entities.pipe;
 
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.jagrosh.discordipc.IPCClient;
 import com.jagrosh.discordipc.entities.Callback;
@@ -81,7 +82,7 @@ public class UnixPipe extends Pipe
         d = new byte[Integer.reverseBytes(bb.getInt())];
 
         is.read(d);
-        Packet p = new Packet(op, new JsonPrimitive(new String(d)));
+        Packet p = new Packet(op, JsonParser.parseString(new String(d)));
         LOGGER.debug("Received packet: {}", p);
         if(listener != null)
             listener.onPacketReceived(ipcClient, p);

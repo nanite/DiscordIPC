@@ -88,21 +88,27 @@ public class RichPresence
     {
         JsonObject payload = new JsonObject();
         payload.addProperty("state", state);
-        payload.addProperty("details", details);
+        if (details != null) payload.addProperty("details", details);
 
         JsonObject timeStamp = new JsonObject();
         if (startTimestamp != null)
             timeStamp.addProperty("start", startTimestamp.toEpochSecond());
         if (endTimestamp != null)
             timeStamp.addProperty("end", endTimestamp.toEpochSecond());
-        payload.add("timestamps", timeStamp);
+
+        if (!timeStamp.entrySet().isEmpty()) {
+            payload.add("timestamps", timeStamp);
+        }
 
         JsonObject assets = new JsonObject();
-        assets.addProperty("large_image", largeImageKey);
-        assets.addProperty("large_text", largeImageText);
-        assets.addProperty("small_image", smallImageKey);
-        assets.addProperty("small_text", smallImageText);
-        payload.add("assets", assets);
+        if (largeImageKey != null) assets.addProperty("large_image", largeImageKey);
+        if (largeImageText != null) assets.addProperty("large_text", largeImageText);
+        if (smallImageKey != null) assets.addProperty("small_image", smallImageKey);
+        if (smallImageText != null) assets.addProperty("small_text", smallImageText);
+
+        if (!assets.entrySet().isEmpty()) {
+            payload.add("assets", assets);
+        }
 
         if (partyId != null)
         {
@@ -118,10 +124,12 @@ public class RichPresence
         }
 
         JsonObject secrets = new JsonObject();
-        secrets.addProperty("join", joinSecret);
-        secrets.addProperty("spectate", spectateSecret);
-        secrets.addProperty("match", matchSecret);
-        payload.add("secrets", secrets);
+        if (joinSecret != null) secrets.addProperty("join", joinSecret);
+        if (spectateSecret != null) secrets.addProperty("spectate", spectateSecret);
+        if (matchSecret != null) secrets.addProperty("match", matchSecret);
+        if (!secrets.entrySet().isEmpty()) {
+            payload.add("secrets", secrets);
+        }
         payload.addProperty("instance", instance);
 
         JsonArray buttonsObj = new JsonArray();

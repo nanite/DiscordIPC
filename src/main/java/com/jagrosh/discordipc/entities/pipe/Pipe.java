@@ -189,7 +189,7 @@ public abstract class Pipe {
         try
         {
             String nonce = generateNonce();
-            data.addProperty("none", nonce);
+            data.addProperty("nonce", nonce);
             Packet p = new Packet(op, data);
             if(callback!=null && !callback.isEmpty())
                 callbacks.put(nonce, callback);

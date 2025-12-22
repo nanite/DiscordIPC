@@ -361,7 +361,10 @@ public final class IPCClient implements Closeable
                 while((p = pipe.read()).getOp() != OpCode.CLOSE)
                 {
                     JsonObject json = p.getJson().getAsJsonObject();
-                    Event event = !json.has("evt") ? Event.NULL : Event.of(json.get("evt").getAsString());
+                    Event event = Event.NULL;
+                    if (json.has("evt") && !json.get("evt").isJsonNull()) {
+                        event = Event.of(json.get("evt").getAsString());
+                    }
                     String nonce = Utils.getJsonStringOrDefault(json, "nonce", null );
                     switch(event)
                     {
