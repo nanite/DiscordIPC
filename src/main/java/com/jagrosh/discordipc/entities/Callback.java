@@ -65,6 +65,8 @@ public class Callback
     }
 
     /**
+     * Runnable variant of the consumer constructor
+     *
      * @param success The Runnable to launch after a successful process.
      * @param failure The Consumer to launch if the process has an error.
      */

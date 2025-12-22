@@ -44,11 +44,15 @@ public class RichPresence
     private final String joinSecret;
     private final String spectateSecret;
     private final boolean instance;
+    private final String buttonLabel1;
+    private final String buttonUrl1;
+    private final String buttonLabel2;
+    private final String buttonUrl2;
     
     public RichPresence(String state, String details, OffsetDateTime startTimestamp, OffsetDateTime endTimestamp, 
             String largeImageKey, String largeImageText, String smallImageKey, String smallImageText, 
             String partyId, int partySize, int partyMax, String matchSecret, String joinSecret, 
-            String spectateSecret, boolean instance)
+            String spectateSecret, boolean instance, String buttonLabel1, String buttonUrl1, String buttonLabel2, String buttonUrl2)
     {
         this.state = state;
         this.details = details;
@@ -65,6 +69,10 @@ public class RichPresence
         this.joinSecret = joinSecret;
         this.spectateSecret = spectateSecret;
         this.instance = instance;
+        this.buttonLabel1 = buttonLabel1;
+        this.buttonUrl1 = buttonUrl1;
+        this.buttonLabel2 = buttonLabel2;
+        this.buttonUrl2 = buttonUrl2;
     }
 
     /**
@@ -116,6 +124,24 @@ public class RichPresence
         payload.add("secrets", secrets);
         payload.addProperty("instance", instance);
 
+        JsonArray buttonsObj = new JsonArray();
+        if (buttonLabel1 != null && buttonUrl1 != null) {
+            JsonObject btn1 = new JsonObject();
+            btn1.addProperty("label", buttonLabel1);
+            btn1.addProperty("url", buttonUrl1);
+            buttonsObj.add(btn1);
+        }
+        if (buttonLabel2 != null && buttonUrl2 != null) {
+            JsonObject btn2 = new JsonObject();
+            btn2.addProperty("label", buttonLabel2);
+            btn2.addProperty("url", buttonUrl2);
+            buttonsObj.add(btn2);
+        }
+
+        if (!buttonsObj.isEmpty()) {
+            payload.add("buttons", buttonsObj);
+        }
+
         return payload;
     }
 
@@ -142,6 +168,10 @@ public class RichPresence
         private String joinSecret;
         private String spectateSecret;
         private boolean instance;
+        private String buttonLabel1;
+        private String buttonUrl1;
+        private String buttonLabel2;
+        private String buttonUrl2;
 
         /**
          * Builds the {@link RichPresence} from the current state of this builder.
@@ -153,7 +183,7 @@ public class RichPresence
             return new RichPresence(state, details, startTimestamp, endTimestamp, 
                     largeImageKey, largeImageText, smallImageKey, smallImageText, 
                     partyId, partySize, partyMax, matchSecret, joinSecret, 
-                    spectateSecret, instance);
+                    spectateSecret, instance, buttonLabel1, buttonUrl1, buttonLabel2, buttonUrl2);
         }
 
         /**
@@ -337,10 +367,50 @@ public class RichPresence
         }
 
         /**
+         * Sets the first button's label and URL.
+         *
+         * @param label The button's label.
+         * @param url The button's URL.
+         *
+         * @return This Builder.
+         */
+        public Builder setButton1(String label, String url) {
+            // If the label is greater than 32 characters, it will be truncated.
+            if (label.length() > 32) {
+                // This is a failsafe
+                label = label.substring(0, 32);
+            }
+
+            this.buttonLabel1 = label;
+            this.buttonUrl1 = url;
+            return this;
+        }
+
+        /**
+         * Sets the second button's label and URL.
+         *
+         * @param label The button's label.
+         * @param url The button's URL.
+         *
+         * @return This Builder.
+         */
+        public Builder setButton2(String label, String url) {
+            // If the label is greater than 32 characters, it will be truncated.
+            if (label.length() > 32) {
+                // This is a failsafe
+                label = label.substring(0, 32);
+            }
+
+            this.buttonLabel2 = label;
+            this.buttonUrl2 = url;
+            return this;
+        }
+
+        /**
          * Marks the {@link #setMatchSecret(String) matchSecret} as a game
          * session with a specific beginning and end.
          *
-         * @param instance Whether or not the {@code matchSecret} is a game
+         * @param instance Whether the {@code matchSecret} is a game
          *                 with a specific beginning and end.
          *
          * @return This Builder.
