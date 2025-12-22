@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+group = 'com.jagrosh'
+version = '0.4'
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.google.code.gson:gson:2.13.2'
+    implementation 'org.slf4j:slf4j-api:2.0.17'
+    implementation 'com.kohlschutter.junixsocket:junixsocket-common:2.6.2'
+    implementation 'com.kohlschutter.junixsocket:junixsocket-native-common:2.6.2'
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}

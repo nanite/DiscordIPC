@@ -15,9 +15,10 @@
  */
 package com.jagrosh.discordipc.entities;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 import java.time.OffsetDateTime;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 /**
  * An encapsulation of all data needed to properly construct a JSON RichPresence payload.
@@ -67,7 +68,7 @@ public class RichPresence
     }
 
     /**
-     * Constructs a {@link JSONObject} representing a payload to send to discord
+     * Constructs a {@link JsonObject} representing a payload to send to discord
      * to update a user's Rich Presence.
      *
      * <p>This is purely internal, and should not ever need to be called outside of
@@ -75,27 +76,47 @@ public class RichPresence
      *
      * @return A JSONObject payload for updating a user's Rich Presence.
      */
-    public JSONObject toJson()
+    public JsonObject toJson()
     {
-        return new JSONObject()
-                .put("state", state)
-                .put("details", details)
-                .put("timestamps", new JSONObject()
-                        .put("start", startTimestamp==null ? null : startTimestamp.toEpochSecond())
-                        .put("end", endTimestamp==null ? null : endTimestamp.toEpochSecond()))
-                .put("assets", new JSONObject()
-                        .put("large_image", largeImageKey)
-                        .put("large_text", largeImageText)
-                        .put("small_image", smallImageKey)
-                        .put("small_text", smallImageText))
-                .put("party", partyId==null ? null : new JSONObject()
-                        .put("id", partyId)
-                        .put("size", new JSONArray().put(partySize).put(partyMax)))
-                .put("secrets", new JSONObject()
-                        .put("join", joinSecret)
-                        .put("spectate", spectateSecret)
-                        .put("match", matchSecret))
-                .put("instance", instance);
+        JsonObject payload = new JsonObject();
+        payload.addProperty("state", state);
+        payload.addProperty("details", details);
+
+        JsonObject timeStamp = new JsonObject();
+        if (startTimestamp != null)
+            timeStamp.addProperty("start", startTimestamp.toEpochSecond());
+        if (endTimestamp != null)
+            timeStamp.addProperty("end", endTimestamp.toEpochSecond());
+        payload.add("timestamps", timeStamp);
+
+        JsonObject assets = new JsonObject();
+        assets.addProperty("large_image", largeImageKey);
+        assets.addProperty("large_text", largeImageText);
+        assets.addProperty("small_image", smallImageKey);
+        assets.addProperty("small_text", smallImageText);
+        payload.add("assets", assets);
+
+        if (partyId != null)
+        {
+            JsonArray size = new JsonArray();
+            size.add(partySize);
+            size.add(partyMax);
+
+            JsonObject party = new JsonObject();
+            party.addProperty("id", partyId);
+            party.add("size", size);
+
+            payload.add("party", party);
+        }
+
+        JsonObject secrets = new JsonObject();
+        secrets.addProperty("join", joinSecret);
+        secrets.addProperty("spectate", spectateSecret);
+        secrets.addProperty("match", matchSecret);
+        payload.add("secrets", secrets);
+        payload.addProperty("instance", instance);
+
+        return payload;
     }
 
     /**

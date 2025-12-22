@@ -16,11 +16,12 @@
 
 package com.jagrosh.discordipc.entities.pipe;
 
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.jagrosh.discordipc.IPCClient;
 import com.jagrosh.discordipc.entities.Callback;
 import com.jagrosh.discordipc.entities.Packet;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.newsclub.net.unix.AFUNIXSocket;
 import org.newsclub.net.unix.AFUNIXSocketAddress;
 import org.slf4j.Logger;
@@ -48,7 +49,7 @@ public class UnixPipe extends Pipe
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Override
-    public Packet read() throws IOException, JSONException
+    public Packet read() throws IOException, JsonIOException
     {
         InputStream is = socket.getInputStream();
 
@@ -80,8 +81,8 @@ public class UnixPipe extends Pipe
         d = new byte[Integer.reverseBytes(bb.getInt())];
 
         is.read(d);
-        Packet p = new Packet(op, new JSONObject(new String(d)));
-        LOGGER.debug(String.format("Received packet: %s", p.toString()));
+        Packet p = new Packet(op, new JsonPrimitive(new String(d)));
+        LOGGER.debug("Received packet: {}", p);
         if(listener != null)
             listener.onPacketReceived(ipcClient, p);
         return p;
@@ -97,7 +98,7 @@ public class UnixPipe extends Pipe
     public void close() throws IOException
     {
         LOGGER.debug("Closing IPC pipe...");
-        send(Packet.OpCode.CLOSE, new JSONObject(), null);
+        send(Packet.OpCode.CLOSE, new JsonObject(), null);
         status = PipeStatus.CLOSED;
         socket.close();
     }

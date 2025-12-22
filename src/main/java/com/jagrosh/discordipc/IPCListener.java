@@ -15,9 +15,10 @@
  */
 package com.jagrosh.discordipc;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.jagrosh.discordipc.entities.Packet;
 import com.jagrosh.discordipc.entities.User;
-import org.json.JSONObject;
 
 /**
  * An implementable listener used to handle events caught by an {@link IPCClient}.<p>
@@ -86,9 +87,9 @@ public interface IPCListener
      * Fired whenever an {@link IPCClient} has closed.
      *
      * @param client The now closed IPCClient.
-     * @param json A {@link JSONObject} with close data.
+     * @param json A {@link JsonElement} with close data.
      */
-    default void onClose(IPCClient client, JSONObject json) {}
+    default void onClose(IPCClient client, JsonElement json) {}
 
     /**
      * Fired whenever an {@link IPCClient} has disconnected,

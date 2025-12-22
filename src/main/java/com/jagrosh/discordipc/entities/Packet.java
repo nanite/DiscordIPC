@@ -15,9 +15,11 @@
  */
 package com.jagrosh.discordipc.entities;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import org.json.JSONObject;
 
 /**
  * A data-packet received from Discord via an {@link com.jagrosh.discordipc.IPCClient IPCClient}.<br>
@@ -28,15 +30,15 @@ import org.json.JSONObject;
 public class Packet
 {
     private final OpCode op;
-    private final JSONObject data;
+    private final JsonElement data;
 
     /**
-     * Constructs a new Packet using an {@link OpCode} and {@link JSONObject}.
+     * Constructs a new Packet using an {@link OpCode} and {@link JsonElement}.
      *
      * @param op The OpCode value of this new Packet.
      * @param data The JSONObject payload of this new Packet.
      */
-    public Packet(OpCode op, JSONObject data)
+    public Packet(OpCode op, JsonElement data)
     {
         this.op = op;
         this.data = data;
@@ -68,11 +70,11 @@ public class Packet
     }
 
     /**
-     * Gets the {@link JSONObject} value as a part of this {@link Packet}.
+     * Gets the {@link JsonObject} value as a part of this {@link Packet}.
      *
      * @return The JSONObject value of this Packet.
      */
-    public JSONObject getJson()
+    public JsonElement getJson()
     {
         return data;
     }
