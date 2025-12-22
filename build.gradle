@@ -7,14 +7,13 @@ group = 'dev.nanite.forks'
 
 def tagVersion = "999.99.99"
 if (providers.environmentVariable("TAG_NAME").isPresent()) {
-    version = providers.environmentVariable("TAG_NAME").get()
-    if (version.startsWith("v")) {
-        version = version.substring(1)
+    tagVersion = providers.environmentVariable("TAG_NAME").get()
+    if (tagVersion.startsWith("v")) {
+        tagVersion = tagVersion.substring(1)
     }
 }
 
 version = tagVersion
-
 
 repositories {
     mavenCentral()
