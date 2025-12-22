@@ -15,8 +15,6 @@ if (providers.environmentVariable("TAG_NAME").isPresent()) {
 
 version = tagVersion
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
 
 repositories {
     mavenCentral()
@@ -36,6 +34,8 @@ java {
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
+    // Target Java 8
+    options.release = 8
 }
 
 publishing {
