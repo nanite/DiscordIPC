@@ -3,8 +3,17 @@ plugins {
     id 'maven-publish'
 }
 
-group = 'com.jagrosh'
-version = '0.5.1-SNAPSHOT'
+group = 'dev.nanite.forks'
+
+def tagVersion = "999.99.99"
+if (providers.environmentVariable("TAG_NAME").isPresent()) {
+    version = providers.environmentVariable("TAG_NAME").get()
+    if (version.startsWith("v")) {
+        version = version.substring(1)
+    }
+}
+
+version = tagVersion
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -14,10 +23,10 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.google.code.gson:gson:2.13.2'
+    implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'org.slf4j:slf4j-api:2.0.17'
-    implementation 'com.kohlschutter.junixsocket:junixsocket-common:2.6.2'
-    implementation 'com.kohlschutter.junixsocket:junixsocket-native-common:2.6.2'
+    implementation 'com.kohlschutter.junixsocket:junixsocket-common:2.10.1'
+    implementation 'com.kohlschutter.junixsocket:junixsocket-native-common:2.10.1'
 }
 
 java {
@@ -33,6 +42,20 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
+        }
+    }
+
+    def mavenToken = providers.environmentVariable("NANITE_DEPLOY")
+
+    repositories {
+        if (mavenToken.isPresent()) {
+            maven {
+                url = uri("https://maven.nanite.dev/releases")
+                credentials {
+                    username = "nanite"
+                    password = mavenToken.get()
+                }
+            }
         }
     }
 }
