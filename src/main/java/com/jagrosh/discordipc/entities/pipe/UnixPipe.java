@@ -19,54 +19,38 @@ package com.jagrosh.discordipc.entities.pipe;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
 import com.jagrosh.discordipc.IPCClient;
 import com.jagrosh.discordipc.entities.Callback;
 import com.jagrosh.discordipc.entities.Packet;
-import org.newsclub.net.unix.AFUNIXSocket;
-import org.newsclub.net.unix.AFUNIXSocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.UnixDomainSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.file.Paths;
+import java.nio.channels.SocketChannel;
+import java.nio.file.Path;
 import java.util.HashMap;
 
 public class UnixPipe extends Pipe
 {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UnixPipe.class);
-    private final AFUNIXSocket socket;
+    private final SocketChannel channel;
 
     UnixPipe(IPCClient ipcClient, HashMap<String, Callback> callbacks, String location) throws IOException
     {
         super(ipcClient, callbacks);
 
-        socket = AFUNIXSocket.newInstance();
-        socket.connect(AFUNIXSocketAddress.of(Paths.get(location)));
+        UnixDomainSocketAddress address = UnixDomainSocketAddress.of(Path.of(location));
+        channel = SocketChannel.open(address);
+        channel.configureBlocking(true);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Override
     public Packet read() throws IOException, JsonIOException
     {
-        InputStream is = socket.getInputStream();
-
-        while(is.available() == 0 && status == PipeStatus.CONNECTED)
-        {
-            try {
-                Thread.sleep(50);
-            } catch(InterruptedException ignored) {}
-        }
-
-        /*byte[] buf = new byte[is.available()];
-        is.read(buf, 0, buf.length);
-        LOGGER.info(new String(buf));
-
-        if (true) return null;*/
-
         if(status==PipeStatus.DISCONNECTED)
             throw new IOException("Disconnected!");
 
@@ -74,15 +58,20 @@ public class UnixPipe extends Pipe
             return new Packet(Packet.OpCode.CLOSE, null);
 
         // Read the op and length. Both are signed ints
-        byte[] d = new byte[8];
-        is.read(d);
-        ByteBuffer bb = ByteBuffer.wrap(d);
+        ByteBuffer header = ByteBuffer.allocate(8);
+        readFully(header);
+        header.flip();
+        int op = Integer.reverseBytes(header.getInt());
+        int length = Integer.reverseBytes(header.getInt());
 
-        Packet.OpCode op = Packet.OpCode.values()[Integer.reverseBytes(bb.getInt())];
-        d = new byte[Integer.reverseBytes(bb.getInt())];
+        ByteBuffer payload = ByteBuffer.allocate(length);
+        readFully(payload);
+        payload.flip();
+        byte[] data = new byte[length];
+        payload.get(data);
 
-        is.read(d);
-        Packet p = new Packet(op, JsonParser.parseString(new String(d)));
+        Packet.OpCode opcode = Packet.OpCode.values()[op];
+        Packet p = new Packet(opcode, JsonParser.parseString(new String(data)));
         LOGGER.debug("Received packet: {}", p);
         if(listener != null)
             listener.onPacketReceived(ipcClient, p);
@@ -92,7 +81,12 @@ public class UnixPipe extends Pipe
     @Override
     public void write(byte[] b) throws IOException
     {
-        socket.getOutputStream().write(b);
+        ByteBuffer buffer = ByteBuffer.wrap(b);
+        while(buffer.hasRemaining())
+        {
+            if(channel.write(buffer) == -1)
+                throw new IOException("Disconnected!");
+        }
     }
 
     @Override
@@ -101,6 +95,19 @@ public class UnixPipe extends Pipe
         LOGGER.debug("Closing IPC pipe...");
         send(Packet.OpCode.CLOSE, new JsonObject(), null);
         status = PipeStatus.CLOSED;
-        socket.close();
+        channel.close();
+    }
+
+    private void readFully(ByteBuffer buffer) throws IOException
+    {
+        while(buffer.hasRemaining())
+        {
+            int read = channel.read(buffer);
+            if(read == -1)
+            {
+                status = PipeStatus.DISCONNECTED;
+                throw new IOException("Disconnected!");
+            }
+        }
     }
 }
