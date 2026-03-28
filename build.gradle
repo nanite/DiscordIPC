@@ -33,8 +33,8 @@ java {
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
-    // Target Java 17
-    options.release = 17
+    // Target Java 25
+    options.release = 25
 }
 
 publishing {
